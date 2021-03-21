@@ -73,6 +73,7 @@ Requests that return multiple items will be paginated to 30 items by default.
             'grant_type' => 'refresh_token',
             'refresh_token' => StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)->first()->config_value
         );
+        print_r($post);
 
         $url = $this->url . "/oauth/token";
         $ch = curl_init();
