@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\StravaConfig;
+use App\ConfigNames;
+
 class StravaApi extends Controller
 {
     protected $options;
+    protected $url;
+
+    public function __construct()
+    {
+        $this->url = "https://www.strava.com/api/v3";
+    }
+
 
     /*
      * Pagination
@@ -20,61 +30,72 @@ Requests that return multiple items will be paginated to 30 items by default.
 
      */
 
-    public function apiRequest()
+    public function apiRequest($url, $method = "GET", $json = "")
     {
-        try {
-            $adapter = new \GuzzleHttp\Client(['base_uri' => 'https://www.strava.com/api/v3/']);
-            $service = new \Strava\API\Service\REST($this->getToken(), $adapter);  // Define your user token here.
-            $client = new \Strava\API\Client($service);
-
-            $athlete = $client->getAthlete();
-            print_r($athlete);
-
-            $activities = $client->getAthleteActivities();
-            print_r($activities);
-
-            $club = $client->getClub(9729);
-            print_r($club);
-        } catch (\Strava\API\Exception $e) {
-            print $e->getMessage();
+//        $this->_mlogger->info("ameRequest starting...");
+        $_token = $this->getToken();
+        if (!$_token) return false;
+        $method = strtoupper($method);
+        $url = $this->url . $url;
+//        $this->_mlogger->info("ameRequest URL:" . $url);
+//        $this->_mlogger->info("ameRequest METHOD:" . $method);
+        if ($json) {
+//            $this->_mlogger->info("ameRequest JSON:" . $json);
         }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Authorization: Bearer " . $_token));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//        curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
+        if ($method == "POST" || $method == "PUT") {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+        }
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $result = curl_exec($ch);
+//        $this->_mlogger->info("ameRequest OUTPUT:" . $result);
+//        $this->_logger->log(curl_getinfo($ch, CURLINFO_HTTP_CODE), "header", $url, $json);
+//        $this->_logger->log($result, "info", $url, $json);
+        curl_close($ch);
+        return $result;
     }
 
     public function getToken()
     {
-        $token = "f182fecfacc0792ab8a0febf5b1e444cb4de593c";
-        $refreshToken = "5c7b72e7f5193759be7308fd5271f3bd345f7155";
-        $isso = "curl -X POST https://www.strava.com/api/v3/oauth/token \
-  -d client_id=ReplaceWithClientID \
-  -d client_secret=ReplaceWithClientSecret \
-  -d grant_type=refresh_token \
-  -d refresh_token=ReplaceWithRefreshToken";
+        if(time()<=StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)->config_value-3600)
+            return StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)->config_value;
 
-        try {
-            $options = [
-                'clientId'     => 62663,
-                'clientSecret' => '565dafda1e29ff94f7f29ab8dd47a0e7d20c013e',
-                'redirectUri'  => 'http://my-app/callback.php'
-            ];
-            $oauth = new \Strava\API\OAuth($options);
+        $post = array(
+            'client_id' =>  StravaConfig::where('config_name',ConfigNames::CLIENT_ID)->config_value,
+            'client_secret' => StravaConfig::where('config_name',ConfigNames::CLIENT_SECRET)->config_value,
+            'grant_type' => 'refresh_token',
+            'refresh_token' => StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)->config_value
+        );
 
-            if (!isset($_GET['code'])) {
-                print '<a href="'.$oauth->getAuthorizationUrl([
-                        // Uncomment required scopes.
-                        'scope' => [
-                            'public',
-                            // 'write',
-                            // 'view_private',
-                        ]
-                    ]).'">Connect</a>';
-            } else {
-                $token = $oauth->getAccessToken('authorization_code', [
-                    'code' => $_GET['code']
-                ]);
-                print $token->getToken();
-            }
-        } catch(\Strava\API\Exception $e) {
-            print $e->getMessage();
-        }
+        $url = $this->url . "/oauth/token";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/x-www-form-urlencoded',
+        ));
+        $result = curl_exec($ch);
+        $json_array = json_decode($result,true);
+
+        if(json_last_error()) return false;
+
+        StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)
+            ->update(['config_value' => $json_array['access_token']]);
+        StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)
+            ->update(['config_value' => time() + $json_array['expires_in']]);
+        StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)
+            ->update(['config_value' => $json_array['refresh_token']]);
+
+        return $json_array['access_token'];
     }
 }
