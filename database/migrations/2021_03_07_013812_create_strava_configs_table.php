@@ -20,19 +20,19 @@ class CreateStravaConfigsTable extends Migration
             $table->string('config_value');
             $table->timestamps();
         });
-        $config = new \App\Config();
+        $config = new \App\StravaConfig();
         $config->config_name = "strava_api_access_token";
         $config->config_value = "";
         $config->save();
         unset($config);
 
-        $config = new \App\Config();
+        $config = new \App\StravaConfig();
         $config->config_name = "strava_api_refresh_token";
         $config->config_value = env('STRAVA_TOKEN_REFRESH');
         $config->save();
         unset($config);
 
-        $config = new \App\Config();
+        $config = new \App\StravaConfig();
         $config->config_name = "strava_api_token_expires_at";
         $config->config_value = "0";
         $config->save();
