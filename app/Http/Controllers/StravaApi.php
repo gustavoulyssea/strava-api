@@ -86,6 +86,7 @@ Requests that return multiple items will be paginated to 30 items by default.
             'Content-Type: application/x-www-form-urlencoded',
         ));
         $result = curl_exec($ch);
+        echo $result;
         $json_array = json_decode($result,true);
 
         if(json_last_error()) return false;
