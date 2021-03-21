@@ -68,8 +68,8 @@ Requests that return multiple items will be paginated to 30 items by default.
             return StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)->config_value;
 
         $post = array(
-            'client_id' =>  StravaConfig::where('config_name',ConfigNames::CLIENT_ID)->config_value,
-            'client_secret' => StravaConfig::where('config_name',ConfigNames::CLIENT_SECRET)->config_value,
+            'client_id' =>  env('STRAVA_CLIENT_ID')
+            'client_secret' => env('STRAVA_CLIENT_SECRET'),
             'grant_type' => 'refresh_token',
             'refresh_token' => StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)->config_value
         );
