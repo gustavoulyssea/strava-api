@@ -39,5 +39,6 @@ class UpdateToken extends Command
     {
         $api = new \App\Http\Controllers\StravaApi();
         $token = $api->getToken(true);
+        echo "\n\nNew token: ".$token . "\n\n";
     }
 }
