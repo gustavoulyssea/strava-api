@@ -61,9 +61,10 @@ Requests that return multiple items will be paginated to 30 items by default.
         return $result;
     }
 
-    public function getToken()
+    public function getToken($forceUpdate = false)
     {
-        if(time()<=StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)->config_value-3600)
+        if(!$forceUpdate
+            && time()<=StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)->config_value-3600)
             return StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)->config_value;
 
         $post = array(
