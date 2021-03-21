@@ -64,14 +64,14 @@ Requests that return multiple items will be paginated to 30 items by default.
     public function getToken($forceUpdate = false)
     {
         if(!$forceUpdate
-            && time()<=StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)->config_value-3600)
-            return StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)->config_value;
+            && time()<=StravaConfig::where('config_name',ConfigNames::TOKEN_EXPIRES_AT)->first()->config_value-3600)
+            return StravaConfig::where('config_name',ConfigNames::ACCESS_TOKEN)->first()->config_value;
 
         $post = array(
             'client_id' =>  env('STRAVA_CLIENT_ID'),
             'client_secret' => env('STRAVA_CLIENT_SECRET'),
             'grant_type' => 'refresh_token',
-            'refresh_token' => StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)->config_value
+            'refresh_token' => StravaConfig::where('config_name',ConfigNames::REFRESH_TOKEN)->first()->config_value
         );
 
         $url = $this->url . "/oauth/token";
