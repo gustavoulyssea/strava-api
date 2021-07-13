@@ -16,7 +16,11 @@ class StravaApi extends Controller
     {
         $this->url = "https://www.strava.com/api/v3";
     }
-
+    public function getClubActivities($clubId,$page = 1)
+    {
+        $url = "/clubs/".$clubId."/activities?page=".$page."&per_page=200";
+        return $this->apiRequest($url);
+    }
 
     /*
      * Pagination

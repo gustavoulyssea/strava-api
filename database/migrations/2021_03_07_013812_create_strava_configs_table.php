@@ -38,7 +38,8 @@ class CreateStravaConfigsTable extends Migration
         $config->save();
         unset($config);
     }
-    public function getConfigs(){
+    public function getConfigs()
+    {
         return [
             'STRAVA_CLIENT_ID',
             'STRAVA_CLIENT_SECRET',
@@ -47,19 +48,17 @@ class CreateStravaConfigsTable extends Migration
             'STRAVA_15_MIN_LIMIT',
             'STRAVA_DAILY_LIMIT'
         ];
-
     }
     public function validateConfigs()
     {
         $configs = $this->getConfigs();
 
-        foreach ($configs as $config){
-            if(!env($config)){
+        foreach ($configs as $config) {
+            if (!env($config)) {
                 echo "Please set ".$config." on .env to continue.";
                 return 0;
             }
         }
-
     }
 
     /**
