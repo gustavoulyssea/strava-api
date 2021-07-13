@@ -22,12 +22,10 @@ class StravaActivityController extends Controller
     public function importGroupActivities($groupId)
     {
         $api = new \App\Http\Controllers\StravaApi();
-        for ($page=1;$page<=10;$page++) {
-            $json = $api->getClubActivities($groupId, $page);
-            $activities = json_decode($json, true);
-            foreach ($activities as $activity) {
-                $this->insertActivity(json_encode($activity, JSON_PRETTY_PRINT));
-            }
+        $json = $api->getClubActivities($groupId);
+        $activities = json_decode($json, true);
+        foreach ($activities as $activity) {
+            $this->insertActivity(json_encode($activity, JSON_PRETTY_PRINT));
         }
     }
     public function insertActivity($json)
