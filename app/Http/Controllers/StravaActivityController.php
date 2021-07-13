@@ -26,7 +26,7 @@ class StravaActivityController extends Controller
             $json = $api->getClubActivities($groupId, $page);
             $activities = json_decode($json, true);
             foreach ($activities as $activity) {
-                $this->insertActivity($activities);
+                $this->insertActivity(json_encode($activity, JSON_PRETTY_PRINT));
             }
         }
     }
