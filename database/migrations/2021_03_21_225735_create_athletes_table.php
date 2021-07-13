@@ -16,7 +16,6 @@ class CreateAthletesTable extends Migration
         Schema::create('athletes', function (Blueprint $table) {
             $table->id();
             $table->string('strava_id');
-            $table->string('strava_id');
             $table->timestamps();
         });
     }
